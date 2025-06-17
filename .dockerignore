@@ -1,0 +1,12 @@
+# Git 관련 폴더
+.git
+.gitignore
+
+# Node.js 의존성 폴더 (Dockerfile 내부에서 설치하므로 제외)
+node_modules
+
+# NestJS 빌드 결과물 (Dockerfile 내부에서 생성하므로 제외)
+dist
+
+# npm 디버그 로그
+npm-debug.log
