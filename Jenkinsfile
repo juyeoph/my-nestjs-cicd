@@ -7,13 +7,14 @@ pipeline {
     }
 
     stages {
-        stage('Checkout Source') {
-            steps {
-                // Git 저장소에서 코드를 가져옴
-                // credentialsId는 private 저장소일 경우에만 필요합니다. public이면 생략 가능.
-                git branch: env.BRANCH_NAME, url: 'https://github.com/juyeoph/my-nestjs-cicd.git'
-            }
-        }
+           // Checkout Source 단계는 Jenkins가 자동으로 처리하므로 주석합니다.
+//         stage('Checkout Source') {
+//             steps {
+//                 // Git 저장소에서 코드를 가져옴
+//                 // credentialsId는 private 저장소일 경우에만 필요합니다. public이면 생략 가능.
+//                 git branch: env.BRANCH_NAME, url: 'https://github.com/juyeoph/my-nestjs-cicd.git'
+//             }
+//         }
 
         stage('Build Docker Image') {
             steps {
