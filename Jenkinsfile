@@ -29,28 +29,27 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    def dockerImageTag = "${env.DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
+                    def valuesFile = "" // 사용할 values 파일 경로를 담을 변수
 
-                    // 1. 이미지 이름 placeholder를 실제 이미지 태그로 교체
-                    sh "sed -i.bak 's|__IMAGE_TO_REPLACE__|${dockerImageTag}|g' k8s/deployment.yaml"
-
-                    // 2. 브랜치 이름에 따라 다른 설정을 적용
+                    // 브랜치 이름에 따라 사용할 설정 파일만 선택
                     if (env.BRANCH_NAME == 'main') {
-                        echo "Deploying to Production Environment"
-                        sh "sed -i.bak 's|__REPLICAS__|3|g' k8s/deployment.yaml"
-                        sh "sed -i.bak 's|__GREETING__|Hello from Prod!|g' k8s/deployment.yaml"
+                        echo "Production values will be used."
+                        valuesFile = "./my-app-chart/environments/values-prod.yaml"
                     } else {
-                        echo "Deploying to Development Environment"
-                        sh "sed -i.bak 's|__REPLICAS__|1|g' k8s/deployment.yaml"
-                        sh "sed -i.bak 's|__GREETING__|Hello from Dev!|g' k8s/deployment.yaml"
+                        echo "Development values will be used."
+                        valuesFile = "./my-app-chart/environments/values-dev.yaml"
                     }
 
-                    echo "Applying Kubernetes manifests..."
-                    sh "kubectl apply -f k8s/"
-
-                    echo "Deployment successful!"
+                    // Helm 명령어로 배포! if/else와 sed가 모두 사라졌습니다.
+                    sh """
+                        helm upgrade --install my-nestjs-release ./my-app-chart \
+                            -f ${valuesFile} \
+                            --set image.repository=${env.DOCKER_IMAGE_NAME} \
+                            --set image.tag=${env.BUILD_NUMBER}
+                    """
                 }
             }
         }
+
     }
 }
