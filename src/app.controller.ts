@@ -12,7 +12,10 @@ export class AppController {
 
   @Get('hello')
   getHelloCiCd(): string {
-    // GREETING_MESSAGE 환경변수가 있으면 그 값을, 없으면 기본 메시지를 반환
-    return process.env.GREETING_MESSAGE || 'Hello from Default!';
+    const greeting = process.env.GREETING_MESSAGE || 'Hello from Default!';
+    const buildInfo = process.env.BUILD_INFO || 'N/A';
+
+    // 예: "Hello from Dev! (Build: Jenkins-Build-8)"
+    return `${greeting} (Build: ${buildInfo})`;
   }
 }

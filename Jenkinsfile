@@ -40,12 +40,13 @@ pipeline {
                         valuesFile = "./my-app-chart/environments/values-dev.yaml"
                     }
 
-                    // Helm 명령어로 배포! if/else와 sed가 모두 사라졌습니다.
+                    // Jenkinsfile의 Deploy to Kubernetes 단계
                     sh """
                         helm upgrade --install my-nestjs-release ./my-app-chart \
                             -f ${valuesFile} \
                             --set image.repository=${env.DOCKER_IMAGE_NAME} \
-                            --set image.tag=${env.BUILD_NUMBER}
+                            --set image.tag=${env.BUILD_NUMBER} \
+                            --set buildInfo="Jenkins-Build-${env.BUILD_NUMBER}"
                     """
                 }
             }

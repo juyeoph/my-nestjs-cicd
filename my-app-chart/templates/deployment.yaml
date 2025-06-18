@@ -31,3 +31,5 @@ spec:
             - name: "GREETING_MESSAGE"
               # values.yaml의 greetingMessage 값을 사용
               value: "{{ .Values.greetingMessage }}"
+            - name: "BUILD_INFO"      # <--- 이 부분을 추가
+              value: "{{ .Values.buildInfo }}" # <--- 이 부분을 추가
