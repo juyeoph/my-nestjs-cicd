@@ -17,28 +17,28 @@ RUN apt-get update && \
       https://download.docker.com/linux/debian \
       $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list && \
     apt-get update && \
-    apt-get install -y docker-ce-cli
+    apt-get install -y docker-ce-cli && \
+    # ==========================================================
+    # ===== 이 부분이 kubectl 설치 부분입니다 =====
+    # ==========================================================
+    # kubectl 최신 안정 버전 설치
+    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
+    install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && \
+    rm kubectl
 
-# ==========================================================
-# ===== 이 부분을 최종 코드로 교체합니다 =====
-# ==========================================================
 # 전달받은 DOCKER_GID로 'docker' 그룹이 존재하도록 보장하는 최종 로직
 RUN if [ -n "$DOCKER_GID" ]; then \
-        # GID를 사용하는 그룹의 현재 이름을 찾음
         EXISTING_GROUP_WITH_GID=$(getent group ${DOCKER_GID} | cut -d: -f1); \
-        # 만약 GID를 사용하는 그룹이 존재한다면
         if [ -n "$EXISTING_GROUP_WITH_GID" ]; then \
-            # 그리고 그 그룹 이름이 'docker'가 아니라면, 이름을 'docker'로 변경
             if [ "$EXISTING_GROUP_WITH_GID" != "docker" ]; then \
                 groupmod -n docker $EXISTING_GROUP_WITH_GID; \
             fi; \
-        # GID를 사용하는 그룹이 아예 없다면, 'docker' 그룹을 새로 생성
         else \
             groupadd -g ${DOCKER_GID} docker; \
         fi; \
-        # 'jenkins' 사용자를 'docker' 그룹에 추가
         usermod -aG docker jenkins; \
     fi
+
 
 # 다시 jenkins 사용자로 전환합니다.
 USER jenkins

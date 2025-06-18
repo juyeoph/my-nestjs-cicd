@@ -43,20 +43,17 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    def dockerImageTag = "${env.DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
-
-                    // 1. deployment.yaml 파일의 이미지 자리 표시자를 실제 이미지 태그로 교체
-                    //    (macOS의 sed 명령어 호환성을 위해 -i 뒤에 .bak을 붙임)
-                    sh "sed -i.bak 's|__IMAGE_TO_REPLACE__|${dockerImageTag}|g' k8s/deployment.yaml"
-
-                    // 2. 수정된 YAML 파일들을 쿠버네티스 클러스터에 적용
-                    echo "Applying Kubernetes manifests..."
-                    sh "kubectl apply -f k8s/"
-
-                    echo "Deployment successful!"
+                    // Helm 명령어를 사용하여 배포합니다.
+                    // my-nestjs-release 라는 이름으로 배포(릴리스)합니다.
+                    // 만약 이미 존재하면 업그레이드하고(--upgrade), 없으면 새로 설치합니다(--install).
+                    // --set 옵션으로 values.yaml의 값을 동적으로 덮어씁니다.
+                    sh """
+                        helm upgrade --install my-nestjs-release ./my-app-chart \
+                            --set image.repository=${env.DOCKER_IMAGE_NAME} \
+                            --set image.tag=${env.BUILD_NUMBER}
+                    """
                 }
             }
         }
-
     }
 }

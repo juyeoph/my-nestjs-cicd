@@ -15,6 +15,6 @@ spec:
       containers:
         - name: my-nestjs-app-container
           # 중요: 이 부분은 젠킨스가 빌드할 때마다 동적으로 바꿀 예정입니다.
-          image: __IMAGE_TO_REPLACE__
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           ports:
             - containerPort: 3000
