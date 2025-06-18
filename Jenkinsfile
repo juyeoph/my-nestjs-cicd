@@ -1,57 +1,35 @@
+// Jenkinsfile
 pipeline {
-    agent any // 파이프라인을 실행할 에이전트(노드)를 아무거나 사용
-
+    agent any
     environment {
-        // Docker 이미지 이름을 환경 변수로 지정
         DOCKER_IMAGE_NAME = "my-nestjs-app-from-jenkins"
     }
-
     stages {
-        stage('Checkout Source') {
-            steps {
-                // GitHub 저장소에서 코드를 가져옴
-                git branch: 'main', url: 'https://github.com/juyeoph/my-nestjs-cicd'
-            }
-        }
-
-        stage('Build Docker Image') {
+        stage('Checkout Source') { /* ... 이전과 동일 ... */ }
+        stage('Build Docker Image') { /* ... 이전과 동일 ... */ }
+        stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    // 빌드 번호를 태그로 사용하여 유니크한 이미지 생성
                     def dockerImageTag = "${env.DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
 
-                    // 'docker build' 명령 실행
-                    sh "docker build -t ${dockerImageTag} ."
+                    // sed 명령어가 점점 더 복잡하고 길어집니다...
+                    sh "sed -i.bak 's|__IMAGE_TO_REPLACE__|${dockerImageTag}|g' k8s/deployment.yaml"
 
-                    echo "Successfully built Docker image: ${dockerImageTag}"
-                }
-            }
-        }
+                    // 브랜치 이름에 따라 다른 설정을 적용
+                    if (env.BRANCH_NAME == 'main') {
+                        echo "Deploying to Production Environment"
+                        sh "sed -i.bak 's|__REPLICAS__|3|g' k8s/deployment.yaml"
+                        sh "sed -i.bak 's|__GREETING__|Hello from Prod!|g' k8s/deployment.yaml"
+                    } else {
+                        echo "Deploying to Development Environment"
+                        sh "sed -i.bak 's|__REPLICAS__|1|g' k8s/deployment.yaml"
+                        sh "sed -i.bak 's|__GREETING__|Hello from Dev!|g' k8s/deployment.yaml"
+                    }
 
-        // Deploy 단계는 다음 학습을 위해 주석 처리
-        /*
-        stage('Deploy to Kubernetes') {
-            steps {
-                echo 'Deploying to Kubernetes...'
-                // 여기에 나중에 kubectl apply 명령어가 들어갑니다.
-            }
-        }
-        */
-        // ==========================================================
-        // ===== 마지막 배포 단계 추가! =====
-        // ==========================================================
-        stage('Deploy to Kubernetes') {
-            steps {
-                script {
-                    // Helm 명령어를 사용하여 배포합니다.
-                    // my-nestjs-release 라는 이름으로 배포(릴리스)합니다.
-                    // 만약 이미 존재하면 업그레이드하고(--upgrade), 없으면 새로 설치합니다(--install).
-                    // --set 옵션으로 values.yaml의 값을 동적으로 덮어씁니다.
-                    sh """
-                        helm upgrade --install my-nestjs-release ./my-app-chart \
-                            --set image.repository=${env.DOCKER_IMAGE_NAME} \
-                            --set image.tag=${env.BUILD_NUMBER}
-                    """
+                    echo "Applying Kubernetes manifests..."
+                    sh "kubectl apply -f k8s/"
+
+                    echo "Deployment successful!"
                 }
             }
         }

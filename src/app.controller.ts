@@ -11,7 +11,8 @@ export class AppController {
   }
 
   @Get('hello')
-  getHelloCiDc(): string {
-    return 'Hello from CI/CD!';
+  getHelloCiCd(): string {
+    // GREETING_MESSAGE 환경변수가 있으면 그 값을, 없으면 기본 메시지를 반환
+    return process.env.GREETING_MESSAGE || 'Hello from Default!';
   }
 }

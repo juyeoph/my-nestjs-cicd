@@ -1,0 +1,23 @@
+# k8s/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-nestjs-app-deployment
+spec:
+  replicas: __REPLICAS__  # <--- 복제본 수를 위한 Placeholder
+  selector:
+    matchLabels:
+      app: my-nestjs-app
+  template:
+    metadata:
+      labels:
+        app: my-nestjs-app
+    spec:
+      containers:
+        - name: my-nestjs-app-container
+          image: __IMAGE_TO_REPLACE__ # <--- 이미지 태그를 위한 Placeholder
+          ports:
+            - containerPort: 3000
+          env: # <--- 환경변수 섹션 추가
+            - name: "GREETING_MESSAGE"
+              value: "__GREETING__" # <--- 메시지를 위한 Placeholder

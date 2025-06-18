@@ -7,7 +7,7 @@ ARG DOCKER_GID
 # root 사용자로 전환하여 패키지를 설치합니다.
 USER root
 
-# Docker CLI 설치 (이전과 동일)
+# Docker CLI, kubectl, Helm 설치
 RUN apt-get update && \
     apt-get install -y lsb-release && \
     curl -fsSLo /usr/share/keyrings/docker-archive-keyring.asc \
@@ -24,7 +24,12 @@ RUN apt-get update && \
     # kubectl 최신 안정 버전 설치
     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
     install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && \
-    rm kubectl
+    rm kubectl && \
+    # ==========================================================
+    # ===== 이 부분이 Helm 설치 부분입니다 =====
+    # ==========================================================
+    # Helm 최신 버전 설치
+    curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
 # 전달받은 DOCKER_GID로 'docker' 그룹이 존재하도록 보장하는 최종 로직
 RUN if [ -n "$DOCKER_GID" ]; then \
