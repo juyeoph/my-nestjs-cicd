@@ -1,26 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-nestjs-release-deployment  # 릴리스 이름과 연관되도록 이름 변경 (선택사항)
+  name: {{ .Release.Name }}-deployment  # 릴리스 이름과 연관되도록 이름 변경 (선택사항)
 spec:
-  # values.yaml 파일의 replicaCount 값을 사용
   replicas: {{ .Values.replicaCount }}
-  # ==========================================================
-  # ===== 이 selector 부분이 누락되었을 가능성이 높습니다 =====
-  # ==========================================================
   selector:
     matchLabels:
-      app: my-nestjs-release-app
-  # ==========================================================
+      app: {{ .Release.Name }}-app
   template:
     metadata:
       labels:
-        # 이 labels가 위의 selector.matchLabels와 반드시 일치해야 합니다.
-        app: my-nestjs-release-app
+        app: {{ .Release.Name }}-app
     spec:
       containers:
         - name: my-nestjs-app-container
-          # values.yaml의 image.repository와 image.tag 값을 조합하여 사용
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
@@ -29,7 +22,14 @@ spec:
               protocol: TCP
           env:
             - name: "GREETING_MESSAGE"
-              # values.yaml의 greetingMessage 값을 사용
               value: "{{ .Values.greetingMessage }}"
-            - name: "BUILD_INFO"      # <--- 이 부분을 추가
-              value: "{{ .Values.buildInfo }}" # <--- 이 부분을 추가
+            - name: "BUILD_INFO"
+              value: "{{ .Values.buildInfo }}"
+
+        # --- 2. 새로 추가하는 사이드카 컨테이너 ---
+        - name: sidecar-container
+          # 가장 가벼운 리눅스 이미지 중 하나인 alpine을 사용합니다.
+          image: alpine:3.15
+          # 이 컨테이너는 아무것도 안하고 1시간 동안 잠만 자도록 명령합니다.
+          # 컨테이너가 바로 종료되지 않고 계속 살아있게 하기 위함입니다.
+          command: [ "sleep", "3600" ]
