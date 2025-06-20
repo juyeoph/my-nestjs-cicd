@@ -7,14 +7,22 @@ pipeline {
     }
 
     stages {
-           // Checkout Source 단계는 Jenkins가 자동으로 처리하므로 주석합니다.
-//         stage('Checkout Source') {
-//             steps {
-//                 // Git 저장소에서 코드를 가져옴
-//                 // credentialsId는 private 저장소일 경우에만 필요합니다. public이면 생략 가능.
-//                 git branch: env.BRANCH_NAME, url: 'https://github.com/juyeoph/my-nestjs-cicd.git'
-//             }
-//         }
+
+        // ==========================================================
+        // ===== 'Test' 단계 =====
+        // ==========================================================
+        stage('Test') {
+            steps {
+                script {
+                    echo "Running tests..."
+                    // 'npm ci'는 package-lock.json을 기반으로 의존성을 설치하여
+                    // CI 환경에서 더 빠르고 일관된 빌드를 보장합니다.
+                    sh 'npm ci'
+                    // 'npm run test'를 실행하여 테스트를 수행합니다.
+                    sh 'npm run test'
+                }
+            }
+        }
 
         stage('Build Docker Image') {
             steps {
